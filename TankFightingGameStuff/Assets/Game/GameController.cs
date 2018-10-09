@@ -213,7 +213,7 @@ public class GameController : MonoBehaviour
     {
         if (line.StartsWith("test"))
         {
-            Debug.Log("anyas");
+            Debug.Log("puk");
             return;
         }
         if (line.StartsWith("előre"))
