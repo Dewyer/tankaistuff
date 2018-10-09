@@ -17,10 +17,14 @@ public class GameController : MonoBehaviour
     public GameObject Bullet;
     public float tankSpeed;
     public Queue<Action> CodeActions;
+    Dictionary<GameObject, List<GameObject>> ShotsFiredByTank;
 
     // Use this for initialization
     void Start () {
         CodeActions = new Queue<Action>();
+        ShotsFiredByTank = new Dictionary<GameObject, List<GameObject>>();
+        ShotsFiredByTank.Add(TankRed, new List<GameObject>());
+        ShotsFiredByTank.Add(TankBlue, new List<GameObject>());
 	}
 	
 	// Update is called once per frame
@@ -41,7 +45,7 @@ public class GameController : MonoBehaviour
 
         for (int ii = 0; ii < lines.Count(); ii++)
         {
-            if (!lines[ii].StartsWith("#"))
+            if (!lines[ii].StartsWith("#") || !String.IsNullOrEmpty(lines[ii]))
             {
                 if (lines[ii].StartsWith("ismételd") && lines[ii].Split(' ').Length >= 2)
                 {
@@ -130,9 +134,14 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void TankShot(object tank)
+    public void TankShot(object hitO)
     {
-        Debug.Log("tank shot");
+        var hit = (BulletHit)hitO;
+        if (!ShotsFiredByTank[hit.Tank].Contains(hit.Bullet))
+        {
+            //Destroy(hit.Bullet);
+            Debug.Log(""+hit.Bullet.tag);
+        }
     }
 
     IEnumerator GoForward(int milis, GameObject onObject)
@@ -164,6 +173,7 @@ public class GameController : MonoBehaviour
         var origin = onObject.GetComponentInChildren<Transform>().position;
         var newBullet = Instantiate(Bullet, origin, onObject.transform.rotation);
         newBullet.GetComponent<Rigidbody2D>().velocity = newBullet.transform.up * tankSpeed * 2;
+        ShotsFiredByTank[onObject].Add(newBullet);
 
         yield return new WaitForSeconds(0.1f);
         ActionEndCallBack();
