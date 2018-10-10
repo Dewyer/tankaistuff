@@ -51,28 +51,7 @@ namespace TankServers
                 app.UseHsts();
             }
 
-            app.UseWebSockets();
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path == "/gamews")
-                {
-                    if (context.WebSockets.IsWebSocketRequest)
-                    {
-                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        gameServer.OnNewConnection(context,webSocket);
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = 400;
-                    }
-                }
-                else
-                {
-                    await next();
-                }
-
-            });
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
 

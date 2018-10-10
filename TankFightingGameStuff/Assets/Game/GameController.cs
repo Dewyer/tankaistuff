@@ -3,15 +3,24 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
+    public enum GameState
+    {
+        OnGoing,
+        RedWon,
+        BlueWon,
+        Draw
+    }
 
     public InputField CodeInput;
     public GameObject CodePanel;
     public bool CodeRunning = false;
     public bool Preparing = true;
+    public GameState GameStateValue;
     public GameObject TankBlue;
     public GameObject TankRed;
     public GameObject Bullet;
@@ -139,8 +148,13 @@ public class GameController : MonoBehaviour
         var hit = (BulletHit)hitO;
         if (!ShotsFiredByTank[hit.Tank].Contains(hit.Bullet))
         {
-            //Destroy(hit.Bullet);
-            Debug.Log(""+hit.Bullet.tag);
+            Destroy(hit.Bullet);
+            //Debug.Log(""+hit.Bullet.tag);
+            if (GameStateValue == GameState.OnGoing)
+            {
+                GameStateValue = hit.Tank == TankRed ? GameState.RedWon : GameState.BlueWon;
+                OnGameEnd();
+            }
         }
     }
 
@@ -179,6 +193,18 @@ public class GameController : MonoBehaviour
         ActionEndCallBack();
     }
 
+    IEnumerator EndGameWhenCodeOver()
+    {
+        yield return new WaitForSeconds(3);
+        GameStateValue = GameState.Draw;
+        OnGameEnd();
+    }
+
+    public void OnGameEnd()
+    {
+
+    }
+
     public void ActionEndCallBack()
     {
         if (CodeRunning)
@@ -191,6 +217,7 @@ public class GameController : MonoBehaviour
             {
                 CodeRunning = false;
                 UpdateDevVisible();
+                StartCoroutine(EndGameWhenCodeOver());
             }
         }
     }
