@@ -15,7 +15,7 @@ public class GameController : MonoBehaviour
         BlueWon,
         Draw
     }
-
+    public string ServerUrl;
     public InputField CodeInput;
     public GameObject CodePanel;
     public bool CodeRunning = false;
@@ -24,9 +24,12 @@ public class GameController : MonoBehaviour
     public GameObject TankBlue;
     public GameObject TankRed;
     public GameObject Bullet;
+    public GameObject StartButton;
     public float tankSpeed;
     public Queue<Action> CodeActions;
     Dictionary<GameObject, List<GameObject>> ShotsFiredByTank;
+    public string OtherCode;
+    public string OurId;
 
     // Use this for initialization
     void Start () {
@@ -34,12 +37,56 @@ public class GameController : MonoBehaviour
         ShotsFiredByTank = new Dictionary<GameObject, List<GameObject>>();
         ShotsFiredByTank.Add(TankRed, new List<GameObject>());
         ShotsFiredByTank.Add(TankBlue, new List<GameObject>());
+
+        OtherCode = "";
+        OurId = PlayerPrefs.GetString("serverId");
+
+        StartCoroutine(UpdateOtherCode());
 	}
+
+    public IEnumerable UpdateOtherCode()
+    {
+        while( OtherCode == "")
+        {
+            UnityWebRequest www = UnityWebRequest.Get(ServerUrl + "UpdateLobbyData?id=" + OurId);
+            //www.useHttpContinue = false;
+
+            yield return www.SendWebRequest();
+
+            if (www.isNetworkError || www.isHttpError)
+            {
+                Debug.Log(www.error + " || " + www.downloadHandler.text + " || " + www.responseCode);
+            }
+            else
+            {
+                Debug.Log(www.downloadHandler.text);
+                var resp = ServerResponse.FromJson(www.downloadHandler.text);
+
+                Debug.Log(resp.error + " !!");
+                Debug.Log(resp.data + " !! ");
+                if (resp.error == "None")
+                {
+                    OtherCode = resp.data;
+                    StartButton.SetActive(true);
+                }
+                else
+                {
+
+                }
+            }
+        }
+    }
 	
 	// Update is called once per frame
 	void Update () {
 		
 	}
+
+    public void StartReal()
+    {
+
+
+    }
 
     public void RunCode(string code,GameObject onObject)
     {
